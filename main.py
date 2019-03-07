@@ -2,7 +2,6 @@ from sanic import Sanic, Blueprint
 from sanic.exceptions import NotFound
 from sanic.response import json, redirect, text
 from sanic_openapi import swagger_blueprint, openapi_blueprint, doc
-import sanic_openapi
 import Config
 import redis
 from datetime import datetime, timedelta
