@@ -1,10 +1,10 @@
 class SuccessResponse:
     def __init__(self, code, data):
-        self.Success = code
-        self.Data = data
+        self.success = code
+        self.data = data
 
 
 class FailResponse:
     def __init__(self, code, data):
-        self.Fail = code
-        self.Reason = data
+        self.fail = code
+        self.reason = data
