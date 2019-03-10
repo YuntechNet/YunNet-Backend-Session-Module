@@ -2,26 +2,26 @@ language: python
 
 python:
 - "3.5"
-- "pypy3.5"
 - "3.6"
-- "pypy3.6"
 
 services:
 - docker
 
 install:
 - docker pull redis
-- docker run -p 6379:6379 -v $PWD/redis-data:/data -d redis redis-server --appendonly yes
+- docker run -p 127.0.0.1:6379:6379 -d redis
 - docker ps -a
 - pip install -r requirements-dev.txt
 
 script:
-- python -m pytest --cov=./ --cov-report term-missing --cov-config=.coveragerc ./tests
+- python -m pytest --cov=./ --cov-report term-missing --cov-config=.coveragerc ./tests --capture=no
 
 after_success:
 - codecov
+- pycodestyle --statistics main.py utils/ tests/ 
 
 branches:
   only:
   - master
   - dev
+

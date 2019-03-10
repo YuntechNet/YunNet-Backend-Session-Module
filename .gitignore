@@ -1,9 +1,10 @@
 venv/
 .pytest_cache/
 __pycache__/
-redis-data/
+.vscode/
 
 .coverage
 *.pyc
 *.swp
 *.swo
+
