@@ -1,21 +1,6 @@
-from sanic import Sanic, Blueprint
-from sanic.exceptions import NotFound
-from sanic.log import logger
-from sanic.response import json, redirect
-from sanic_openapi import swagger_blueprint, openapi_blueprint, doc
-from redis import Redis, ConnectionPool, ConnectionError
-from datetime import datetime, timedelta
-from utils.responses import SuccessResponse, FailResponse
-from json import dumps
+from api import Session
+from server import create_app
 from argparse import ArgumentParser
-
-app = Sanic("backend_session_server")
-
-# Add online API documents
-app.blueprint(swagger_blueprint)
-app.blueprint(openapi_blueprint)
-
-session_bp = Blueprint("Session")
 
 
 # parse config
@@ -63,85 +48,7 @@ def process_command():
 # REST API naming ref
 # https://restfulapi.net/resource-naming/
 
-@doc.exclude(True)
-@app.route("/")
-async def redirect_api(request):
-    return redirect("/swagger")
-
-
-@app.exception(NotFound)
-async def page_not_found(request, exception):
-    logger.warn(
-        "{} try access \"{}\" data: {}".format(request.ip, request.url,
-                                               request.body))
-    return json(FailResponse(True, {"Code": 404,
-                                    "Result": "Nothing here :D"}))
-
-
-@doc.route(summary="Check user session")
-@session_bp.get("/Session/<UUID>", strict_slashes=True)
-async def check_session(request, UUID):
-    try:
-        date_string = db.hget(UUID, "datetime")
-    except Exception as e:
-        logger.error(e)
-        response = FailResponse(True, e)
-        return json(vars(response))
-
-    result = SuccessResponse(True,
-                             {"Code": 0,
-                              "Result": "Session valid"})
-    if date_string is None:
-        result = SuccessResponse(True,
-                                 {"Code": 1, "Result": "Session not exist"})
-        return json(result)
-
-    date_string = date_string.decode("utf-8")
-    date = datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S")
-
-    if datetime.now() - date > timedelta(days=30):
-        result = SuccessResponse(True,
-                                 {"Code": 2, "Result": "Session expired"})
-        return json(result)
-
-    return json(result)
-
-
-@doc.route(summary="Add user sessoin")
-@session_bp.post("/Session", strict_slashes=True)
-async def add_session(request):
-    """
-    Request format
-    {
-        "UUID":str
-    }
-    """
-    try:
-        field_pair = {"datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                      "json": dumps(request.json)}
-        db.hmset(request.json["UUID"], field_pair)
-        response = SuccessResponse(True, {"Code": 0,
-                                          "Result": "Session added"})
-    except Exception as e:
-        logger.error(e)
-        response = FailResponse(True, e)
-    return json(vars(response))
-
-
 if __name__ == "__main__":
     args = process_command()
-
-    redis_pool = ConnectionPool(host=args.DB_HOST, port=args.DB_PORT)
-    db = Redis(connection_pool=redis_pool)
-
-    try:
-        db.ping()
-    except ConnectionError:
-        logger.error("Redis server is not available")
-        quit()
-
-    app.blueprint(session_bp)
-    app.static("/favicon-16x16.png", "./static/img/favicon.ico")
-    app.static("/favicon.ico", "./static/img/favicon.ico")
-
+    app = create_app(args)
     app.run(host=args.HOST, port=args.PORT, workers=args.WORKER)
