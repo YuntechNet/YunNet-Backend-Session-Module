@@ -108,7 +108,7 @@ async def check_session(request, UUID):
 
 
 @doc.route(summary="Add user sessoin")
-@session_bp.post("/Session/", strict_slashes=True)
+@session_bp.post("/Session", strict_slashes=True)
 async def add_session(request):
     """
     Request format
