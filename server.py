@@ -3,16 +3,16 @@ from sanic.exceptions import NotFound, MethodNotSupported
 from sanic.log import logger
 from sanic.response import redirect, json
 from sanic_openapi import swagger_blueprint, openapi_blueprint, doc
-
-from api import Session
-from api.Session import session_bp
+from api import session
+from api.session import session_bp
 from utils.db import connect_db
-from utils.responses import FailResponse
+from utils.responses import Response
+from redis.exceptions import ConnectionError
 
 
 def create_app(args):
     db = connect_db(args)
-    Session.db = connect_db(args)
+    session.db = connect_db(args)
     try:
         db.ping()
     except ConnectionError:
@@ -20,6 +20,12 @@ def create_app(args):
         quit()
 
     app = Sanic("backend_session_server")
+
+    app.static("/favicon-16x16.png", "./static/img/favicon.ico")
+    app.static("/favicon.ico", "./static/img/favicon.ico")
+    app.blueprint(openapi_blueprint)
+    app.blueprint(swagger_blueprint)
+    app.blueprint(session_bp)
 
     @doc.exclude(True)
     @app.route("/")
@@ -31,18 +37,18 @@ def create_app(args):
         logger.warning(
             "{} try access \"{}\" data: {}".format(request.ip, request.url,
                                                    request.body))
-        return json(FailResponse(True, {"code": 404,
-                                        "result": "Nothing here :D"}))
+        resp = Response()
+        resp.fail = True
+        resp.code = 404
+        resp.reason = "Nothing here :D"
+        return json(resp, status=404)
 
     @app.exception(MethodNotSupported)
     async def method_not_supported(request, exception):
-        return json(FailResponse(True, {"code": 405,
-                                        "result": "Method not supported"}))
-
-    app.blueprint(session_bp)
-    app.static("/favicon-16x16.png", "./static/img/favicon.ico")
-    app.static("/favicon.ico", "./static/img/favicon.ico")
-    app.blueprint(swagger_blueprint)
-    app.blueprint(openapi_blueprint)
+        resp = Response()
+        resp.fail = True
+        resp.code = 405
+        resp.reason = "Nothing here :D"
+        return json(resp, status=405)
 
     return app
