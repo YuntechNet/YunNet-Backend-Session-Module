@@ -37,18 +37,12 @@ def create_app(args):
         logger.warning(
             "{} try access \"{}\" data: {}".format(request.ip, request.url,
                                                    request.body))
-        resp = Response()
-        resp.fail = True
-        resp.code = 404
-        resp.reason = "Nothing here :D"
+        resp = Response(code=404, fail=True, result="Nothing here :D")
         return json(resp, status=404)
 
     @app.exception(MethodNotSupported)
     async def method_not_supported(request, exception):
-        resp = Response()
-        resp.fail = True
-        resp.code = 405
-        resp.reason = "Nothing here :D"
+        resp = Response(code=405, fail=True, result="Nothing here :D")
         return json(resp, status=405)
 
     return app

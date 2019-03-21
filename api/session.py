@@ -43,29 +43,18 @@ async def check_session(request, UUID):
             result.result = "Session valid"
 
         else:  # if key not exist
-            result = Response()
-            result.success = True
-            result.code = 1
-            result.result = "Session not exist"
+            result = Response(code=1, success=True, result="Session not exist")
             return json(result)
     except Exception as e:
         logger.error(e)
-        resp = Response()
-        resp.fail = True
-        resp.result = e
+        resp = Response(code=-1, fail=True, result=e)
         return json(vars(resp))
 
     return json(result)
 
 
-class UUIDreq:
-    UUID = str
-
-
 @session_bp.post("/")
 @doc.route(summary="Add user session")
-@doc.consumes(UUIDreq, content_type="application/json", location="body",
-              required=True)
 async def add_session(request):
     """
     Request format
@@ -81,15 +70,9 @@ async def add_session(request):
         UUID = request.json["UUID"]
         db.hmset(UUID, field_pair)
         logger.info("{} added to db".format(UUID))
-        resp = Response()
-        resp.success = True
-        resp.code = 0
-        resp.result = "Session added"
+        resp = Response(code=0, success=True, result="Session added")
     except Exception as e:
         logger.error(e)
         logger.error(request.body)
-        resp = Response()
-        resp.code = -1
-        resp.fail = True
-        resp.reason = e
+        resp = Response(code=-1, fail=True, result=e)
     return json(vars(resp))
