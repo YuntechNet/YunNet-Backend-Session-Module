@@ -2,35 +2,42 @@ from sanic import Sanic
 from sanic.exceptions import NotFound, MethodNotSupported
 from sanic.log import logger
 from sanic.response import redirect, json
-from sanic_openapi import swagger_blueprint, openapi_blueprint, doc
-from api import session
-from api.session import session_bp
-from utils.db import connect_db
+from sanic_openapi import swagger_blueprint, doc
+from api.session import create_api as session_api
+from utils.db import RedisDb
 from utils.responses import Response
-from redis.exceptions import ConnectionError
 
 
 def create_app(args):
-    db = connect_db(args)
-    session.db = connect_db(args)
-    try:
-        db.ping()
-    except ConnectionError:
+    """
+    Create Sanic app
+
+    :param args: args
+    :return: Sanic
+    """
+    db = RedisDb(args.DB_HOST, args.DB_PORT)
+
+    if db.db_ping() is not True:
         logger.error("Redis server is not available")
-        quit()
+        exit(1)
 
     app = Sanic("backend_session_server")
 
+    # favicon setup
     app.static("/favicon-16x16.png", "./static/img/favicon.ico")
     app.static("/favicon.ico", "./static/img/favicon.ico")
-    app.blueprint(openapi_blueprint)
-    app.blueprint(swagger_blueprint)
-    app.blueprint(session_bp)
 
+    # swagger_api setup
+    app.blueprint(swagger_blueprint)
+
+    # api register
+    session_api(app, db)
+
+    # exception setup
     @doc.exclude(True)
     @app.route("/")
     async def redirect_api(request):
-        return redirect("/swagger")
+        return redirect("/swagger/")
 
     @app.exception(NotFound)
     async def page_not_found(request, exception):

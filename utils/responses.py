@@ -5,3 +5,11 @@ class Response:
         self.fail = fail
         self.data = data
         self.result = result
+
+
+class DbResponse:
+    def __init__(self, success, result, last_touched_ts="", create_ts=""):
+        self.success = success
+        self.result = result
+        self.last_touched_ts = last_touched_ts
+        self.create_ts = create_ts

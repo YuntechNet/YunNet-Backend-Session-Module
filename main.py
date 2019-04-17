@@ -1,4 +1,3 @@
-from api import session
 from server import create_app
 from argparse import ArgumentParser
 
@@ -43,9 +42,6 @@ def process_command():
                              help="Disable or enable access log")
     return parser.parse_args()
 
-
-# REST API naming ref
-# https://restfulapi.net/resource-naming/
 
 if __name__ == "__main__":
     args = process_command()
