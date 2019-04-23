@@ -10,13 +10,13 @@ blueprint = Blueprint("Session", url_prefix="/Session")
 
 
 def create_api(app, db):
-    """
-    Init api
+    """Init api.
 
-    :param app: App to register
-    :type app: Sanic
-    :param db: Database connection
-    :type db: RedisDb
+    Init api and register to app
+
+    Args:
+        app:Sanic app.
+        db:RedisDb
     """
     app.blueprint(blueprint)
     global redis_db
@@ -31,7 +31,6 @@ async def check_session(request, UUID):
         exist = redis_db.db_exist(UUID)
         data = redis_db.db_get_session(UUID)
         if exist:
-
             last_touched_ts = datetime.strptime(data.last_touched_ts,
                                                 "%Y-%m-%d %H:%M:%S")
             create_ts = datetime.strptime(data.create_ts,

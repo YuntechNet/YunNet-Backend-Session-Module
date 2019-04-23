@@ -11,10 +11,10 @@ class RedisDb:
         self.db = Redis(connection_pool=self.redis_pool)
 
     def db_ping(self):
-        """
-        Ping database
+        """Ping database.
 
-        :return: bool
+        Returns:
+            bool
         """
         try:
             self.db.ping()
@@ -23,12 +23,16 @@ class RedisDb:
         return True
 
     def db_exist(self, UUID):
-        """
-        Check UUID is exist in database
+        """Check UUID if is exist.
 
-        :param UUID: Session UUID
-        :type UUID: str
-        :return: bool
+
+
+        Args:
+            UUID: Session UUID.
+
+        Returns:
+            bool
+
         """
         number = self.db.exists(UUID)
         if number == 0:
@@ -36,13 +40,17 @@ class RedisDb:
         return True
 
     def db_get_session(self, UUID):
-        """
-        Get "create_ts" "last_touched_ts" attribute also will update
-        "last_touched_ts" attribute
+        """Get "create_ts" "last_touched_ts" attribute.
 
-        :param UUID: Session UUID
-        :type UUID: str
-        :return: DbResponse
+        Get "create_ts" "last_touched_ts" attribute also will update
+        "last_touched_ts" attribute.
+
+        Args:
+            UUID: Session UUID.
+
+        Returns:
+            DbResponse
+
         """
         try:
             last_touched_ts = self.db.hget(UUID,
@@ -57,12 +65,16 @@ class RedisDb:
         return resp
 
     def db_set_session(self, UUID):
-        """
-        Add UUID with current timestamp
+        """Add UUID to database.
 
-        :param UUID: Session UUID
-        :type UUID: str
-        :return: DbResponse
+        Add UUID with current timestamp.
+
+        Args:
+            UUID: Session UUID.
+
+        Returns:
+            DbResponse
+
         """
         date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         field_pair = {"create_ts": date_now,

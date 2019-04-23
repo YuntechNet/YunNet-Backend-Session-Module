@@ -45,5 +45,13 @@ def process_command():
 
 if __name__ == "__main__":
     args = process_command()
-    app = create_app(args)
+
+    app = create_app(args.HOST, args.PORT, args.DB_HOST, args.DB_PORT)
+
+    # import setting
+    for arg in vars(args):
+        value = getattr(args, arg)
+        if value:
+            setattr(app.config, arg, value)
+
     app.run(host=args.HOST, port=args.PORT, workers=args.WORKER)

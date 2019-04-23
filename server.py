@@ -8,14 +8,19 @@ from utils.db import RedisDb
 from utils.responses import Response
 
 
-def create_app(args):
-    """
-    Create Sanic app
+def create_app(host, port, dbhost, dbport):
+    """Create Snaic app.
 
-    :param args: args
-    :return: Sanic
+    Args:
+        host:server host.
+        port:server port.
+        dbhost:database host.
+        dbport:database port.
+
+    Returns: sanic object.
+
     """
-    db = RedisDb(args.DB_HOST, args.DB_PORT)
+    db = RedisDb(dbhost, dbport)
 
     if db.db_ping() is not True:
         logger.error("Redis server is not available")
