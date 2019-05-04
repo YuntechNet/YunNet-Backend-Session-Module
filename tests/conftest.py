@@ -1,15 +1,29 @@
 from asyncio import get_event_loop
+
+import pytest
 from pytest import fixture
 from pytest_sanic.utils import TestClient
-from pytest_sanic.plugin import sanic_client
+from utils.db import RedisDb
 
-from main import app, session_bp, page_not_found
+from server import create_app
 
 
 @fixture(scope='module')
 def loop():
     # Reference from pytest_sanic.plugin#loop to give a new scope.
     yield get_event_loop()
+
+
+@pytest.yield_fixture(scope='module')
+def app():
+    app = create_app('127.0.0.1', 1337, '127.0.0.1', 6379)
+    yield app
+
+
+@pytest.yield_fixture(scope='module')
+def db():
+    db = RedisDb('127.0.0.1', 6379)
+    yield db
 
 
 @fixture(scope='module')
@@ -32,7 +46,7 @@ def sanic_cli(loop):
 
 
 @fixture(scope='module')
-def test_cli(loop, sanic_cli):
-    app.blueprint(session_bp)
-    app.exception(page_not_found)
+def test_cli(loop, app, sanic_cli):
+    # app.blueprint(session_bp)
+    # app.exception(page_not_found)
     return loop.run_until_complete(sanic_cli(app))
